@@ -21,7 +21,7 @@ def stdoutIO(stdout=None):
     yield stdout
     sys.stdout = old
 
-inp = "100 RSA.py"
+inp = input("Enter Number of rounds and Filename! Thanks :)")
 rounds, filename = inp.split(" ")
 name, ext= filename.split(".")
 outname = rounds+"_"+name+'_Memory-data.csv'
@@ -30,12 +30,13 @@ writer = csv.writer(f)
 writer.writerow(['Memory usage'])
 print(rounds, filename)
 for i in range(int(rounds)):
+    print(i)
     with stdoutIO() as s:
         try:
             exec(open(filename).read())
         except:
             print("Something wrong with the code")
-    row = [int(s.getvalue())]
+    row = [int(s.getvalue().split("\n")[0])]
     writer.writerow(row)
 f.close()
-plotting.plot_line(outname)
+plotting.plot_Memory(outname)

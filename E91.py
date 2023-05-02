@@ -10,7 +10,7 @@ import numpy as np
 import random
 # regular expressions module
 import re
-
+import tracemalloc
 # importing the QISKit
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, BasicAer
 
@@ -18,6 +18,7 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, 
 from qiskit.tools.visualization import circuit_drawer, plot_histogram
 
 # function that calculates CHSH correlation value
+# tracemalloc.start()
 def chsh_corr(result):
     
     # lists with the counts of measurement results
@@ -135,10 +136,8 @@ for i in range(numberOfSinglets):
     
     # add the created circuit to the circuits list
     circuits.append(circuitName)
-print(circuits[0].name)
 backend=BasicAer.get_backend('qasm_simulator')
 result = execute(circuits, backend=backend, shots=1).result()  
-print(result) # uncomment for detailed result
 result.get_counts(circuits[0])
 abPatterns = [
     re.compile('..00$'), # search for the '..00' output (Alice obtained -1 and Bob obtained -1)
@@ -168,7 +167,7 @@ for i in range(numberOfSinglets):
 aliceKey = [] # Alice's key string k
 bobKey = [] # Bob's key string k'
 
-# comparing the stings with measurement choices
+comparing the stings with measurement choices
 for i in range(numberOfSinglets):
     # if Alice and Bob have measured the spin projections onto the a_2/b_1 or a_3/b_2 directions
     if (aliceMeasurementChoices[i] == 2 and bobMeasurementChoices[i] == 1) or (aliceMeasurementChoices[i] == 3 and bobMeasurementChoices[i] == 2):
@@ -184,10 +183,10 @@ for j in range(keyLength):
 
 corr = chsh_corr(result) # CHSH correlation value
 
-# CHSH inequality test
-print('CHSH correlation value: ' + str(round(corr, 3)))
+CHSH inequality test
+print( str(round(corr, 3)))
 
-# Keys
+Keys
 print('Length of the key: ' + str(keyLength))
 print('Number of mismatching bits: ' + str(abKeyMismatches) + '\n')
 
@@ -199,11 +198,11 @@ measureEA2.t(qr[0])
 measureEA2.h(qr[0])
 measureEA2.measure(qr[0],cr[2])
 
-# measurement of the spin projection of Allice's qubit onto the a_3 direction (standard Z basis)
+# # measurement of the spin projection of Allice's qubit onto the a_3 direction (standard Z basis)
 measureEA3 = QuantumCircuit(qr, cr, name='measureEA3')
 measureEA3.measure(qr[0],cr[2])
 
-# measurement of the spin projection of Bob's qubit onto the b_1 direction (W basis)
+# # measurement of the spin projection of Bob's qubit onto the b_1 direction (W basis)
 measureEB1 = QuantumCircuit(qr, cr, name='measureEB1')
 measureEB1.s(qr[1])
 measureEB1.h(qr[1])
@@ -211,14 +210,14 @@ measureEB1.t(qr[1])
 measureEB1.h(qr[1])
 measureEB1.measure(qr[1],cr[3])
 
-# measurement of the spin projection of Bob's qubit onto the b_2 direction (standard Z measurement)
+# # measurement of the spin projection of Bob's qubit onto the b_2 direction (standard Z measurement)
 measureEB2 = QuantumCircuit(qr, cr, name='measureEB2')
 measureEB2.measure(qr[1],cr[3])
 
-# lists of measurement circuits
+# # lists of measurement circuits
 eveMeasurements = [measureEA2, measureEA3, measureEB1, measureEB2]
-# list of Eve's measurement choices
-# the first and the second elements of each row represent the measurement of Alice's and Bob's qubits by Eve respectively
+# # list of Eve's measurement choices
+# # the first and the second elements of each row represent the measurement of Alice's and Bob's qubits by Eve respectively
 eveMeasurementChoices = []
 
 for j in range(numberOfSinglets):      
@@ -232,16 +231,16 @@ for j in range(numberOfSinglets):
     # create the name of the j-th circuit depending on Alice's, Bob's and Eve's choices of measurement
     circuitName = str(j) + ':A' + str(aliceMeasurementChoices[j]) + '_B' + str(bobMeasurementChoices[j] + 2) + '_E' + str(eveMeasurementChoices[j][0]) + str(eveMeasurementChoices[j][1] - 1)
     
-    # create the joint measurement circuit
-    # add Alice's and Bob's measurement circuits to the singlet state curcuit
-    # singlet state circuit # Eve's measurement circuit of Alice's qubit # Eve's measurement circuit of Bob's qubit # measurement circuit of Alice # measurement circuit of Bob
+#     # create the joint measurement circuit
+#     # add Alice's and Bob's measurement circuits to the singlet state curcuit
+#     # singlet state circuit # Eve's measurement circuit of Alice's qubit # Eve's measurement circuit of Bob's qubit # measurement circuit of Alice # measurement circuit of Bob
     circuitName = singlet + eveMeasurements[eveMeasurementChoices[j][0]-1] + eveMeasurements[eveMeasurementChoices[j][1]-1] + aliceMeasurements[aliceMeasurementChoices[j]-1] +  bobMeasurements[bobMeasurementChoices[j]-1]
     
-    # add the created circuit to the circuits list
+#     # add the created circuit to the circuits list
     circuits.append(circuitName)
 backend=BasicAer.get_backend('qasm_simulator')
 result = execute(circuits, backend=backend, shots=1).result()
-print(result) # uncomment for detailed result
+#print(result) # uncomment for detailed result
 ePatterns = [
     re.compile('00..$'), # search for the '00..' result (Eve obtained the results -1 and -1 for Alice's and Bob's qubits)
     re.compile('01..$'), # search for the '01..' result (Eve obtained the results 1 and -1 for Alice's and Bob's qubits)
@@ -251,12 +250,16 @@ ePatterns = [
 aliceResults = [] # Alice's results (string a)
 bobResults = [] # Bob's results (string a')
 
-# list of Eve's measurement results
-# the elements in the 1-st column are the results obtaned from the measurements of Alice's qubits
-# the elements in the 2-nd column are the results obtaned from the measurements of Bob's qubits
+# x= list(tracemalloc.get_traced_memory())
+# print(x[1]-x[0])
+# tracemalloc.stop()
+
+# # list of Eve's measurement results
+# # the elements in the 1-st column are the results obtaned from the measurements of Alice's qubits
+# # the elements in the 2-nd column are the results obtaned from the measurements of Bob's qubits
 eveResults = [] 
 
-# recording the measurement results
+# # recording the measurement results
 for j in range(numberOfSinglets):
     
     res = list(result.get_counts(circuits[j]).keys())[0] # extract a key from the dict and transform it to str
@@ -274,7 +277,6 @@ for j in range(numberOfSinglets):
     if abPatterns[3].search(res): 
         aliceResults.append(1)
         bobResults.append(1)
-
     # Eve
     if ePatterns[0].search(res): # check if the key is '00..'
         eveResults.append([-1, -1]) # results of the measurement of Alice's and Bob's qubits are -1,-1
@@ -288,7 +290,7 @@ aliceKey = [] # Alice's key string a
 bobKey = [] # Bob's key string a'
 eveKeys = [] # Eve's keys; the 1-st column is the key of Alice, and the 2-nd is the key of Bob
 
-# comparing the strings with measurement choices (b and b')
+# # comparing the strings with measurement choices (b and b')
 for j in range(numberOfSinglets):
     # if Alice and Bob measured the spin projections onto the a_2/b_1 or a_3/b_2 directions
     if (aliceMeasurementChoices[j] == 2 and bobMeasurementChoices[j] == 1) or (aliceMeasurementChoices[j] == 3 and bobMeasurementChoices[j] == 2):  
@@ -312,11 +314,11 @@ eaKnowledge = (keyLength - eaKeyMismatches)/keyLength # Eve's knowledge of Bob's
 ebKnowledge = (keyLength - ebKeyMismatches)/keyLength # Eve's knowledge of Alice's key
 corr = chsh_corr(result)
 # CHSH inequality test
-print('CHSH correlation value: ' + str(round(corr, 3)) + '\n')
+print(round(corr, 3))
 
-# Keys
-print('Length of the key: ' + str(keyLength))
-print('Number of mismatching bits: ' + str(abKeyMismatches) + '\n')
+# # Keys
+# #print('Length of the key: ' + str(keyLength))
+# print('Number of mismatching bits: ' + str(abKeyMismatches) + '\n')
 
-print('Eve\'s knowledge of Alice\'s key: ' + str(round(eaKnowledge * 100, 2)) + ' %')
-print('Eve\'s knowledge of Bob\'s key: ' + str(round(ebKnowledge * 100, 2)) + ' %')
+print(str(round(eaKnowledge * 100, 2)))
+print(str(round(ebKnowledge * 100, 2)))
